@@ -1,0 +1,99 @@
+@import url('https://fonts.googleapis.com/css2?family=Archivo:wght@400;500;600;700&family=Nunito+Sans:wght@400;600;700&display=swap');
+
+:root {
+  --font-family-heading: 'Archivo', system-ui, sans-serif;
+  --font-family-body: 'Nunito Sans', system-ui, sans-serif;
+  --muted-foreground: #717182;
+  --border: rgba(0, 0, 0, 0.1);
+  --primary-orange: #DC5F12;
+  --primary-orange-hover: #c5530f;
+  --secondary-blue: #146C9E;
+  --secondary-blue-hover: #115a82;
+  --text-primary: #030213;
+  --input-bg: #f3f3f5;
+  --input-border: #e2e8f0;
+}
+
+body {
+  font-family: var(--font-family-body);
+  color: var(--text-primary);
+  margin: 0;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-family-heading);
+}
+
+.auth-overlay {
+  background: linear-gradient(135deg, rgba(20, 108, 158, 0.75) 0%, rgba(220, 95, 18, 0.65) 100%);
+}
+
+.auth-card {
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+}
+
+.auth-input {
+  height: 48px;
+  background-color: var(--input-bg);
+  border: 1.5px solid var(--input-border);
+  border-radius: 0.5rem;
+  padding: 0 1rem;
+  font-size: 0.875rem;
+  transition: all 0.2s;
+  width: 100%;
+}
+
+.auth-input:focus {
+  outline: none;
+  border-color: var(--secondary-blue);
+  box-shadow: 0 0 0 3px rgba(20, 108, 158, 0.1);
+}
+
+.auth-button-primary {
+  height: 48px;
+  background-color: var(--primary-orange);
+  color: white;
+  border-radius: 0.5rem;
+  font-weight: 600;
+  transition: all 0.2s;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  border: none;
+  width: 100%;
+}
+
+.auth-button-primary:hover {
+  background-color: var(--primary-orange-hover);
+}
+
+.auth-button-primary:active {
+  transform: scale(0.98);
+}
+
+.auth-button-social {
+  height: 44px;
+  background-color: white;
+  border: 1.5px solid #e2e8f0;
+  border-radius: 0.5rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.5rem;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.auth-button-social:hover {
+  background-color: #f9fafb;
+  border-color: #d1d5db;
+}

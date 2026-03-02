@@ -1,0 +1,7 @@
+{
+  "name": "NestQuest",
+  "description": "An AI-powered student housing platform that matches UK university students with their perfect living spaces based on lifestyle, budget, and academic needs.",
+  "requestFramePermissions": [
+    "geolocation"
+  ]
+}
