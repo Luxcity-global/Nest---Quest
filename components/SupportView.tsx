@@ -5,7 +5,8 @@ import { UserAccount, SupportTicket } from '../types';
 // Fix: Pervasive type resolution errors in framer-motion are bypassed by casting to any.
 const motionAny: any = motion;
 
-const SUPPORT_API_URL = 'http://localhost:8000/api/v1/support/messages';
+const SUPPORT_API_BASE = import.meta.env.VITE_APP_URL || 'http://localhost:8000';
+const SUPPORT_API_URL = `${SUPPORT_API_BASE.replace(/\/$/, '')}/api/v1/support/messages`;
 
 /** 422 validation error detail item from API */
 interface ValidationDetail {
