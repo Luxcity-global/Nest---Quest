@@ -1,0 +1,9 @@
+# Render Blueprint - NestQuest
+# https://docs.render.com/blueprint-spec
+
+services:
+  - type: web
+    name: nestquest
+    env: static
+    buildCommand: npm install && npm run build
+    staticPublishPath: dist
