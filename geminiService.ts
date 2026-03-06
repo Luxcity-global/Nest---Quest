@@ -245,7 +245,8 @@ export const getLocationInsights = async (locationName: string): Promise<Locatio
 };
 
 export const getNestorResponse = async (userMessage: string, history: { role: string, parts: { text: string }[] }[]): Promise<string> => {
-  const BACKEND_URL = "http://localhost:8000/api/v1/chat";
+  const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_URL || 'http://localhost:8000';
+  const BACKEND_URL = `${API_BASE.replace(/\/$/, '')}/api/v1/chat`;
 
   const systemInstruction = `
     You are Nestor, a 24-year-old postgraduate student helper. 

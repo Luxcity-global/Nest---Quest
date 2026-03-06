@@ -17,7 +17,8 @@ export default function DocumentAnalyzer() {
     setAnalysis(null);
 
     try {
-      const response = await fetch('http://localhost:8000/api/v1/analyze-document', {
+      const apiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_URL || 'http://localhost:8000';
+      const response = await fetch(`${apiBase.replace(/\/$/, '')}/api/v1/analyze-document`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ contract_text: contractText })
