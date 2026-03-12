@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import * as pdfjsLib from 'pdfjs-dist';
+import { generateContractTLDR } from '../geminiService';
 
 // Configure PDF.js worker using Vite's URL pattern for static assets
 pdfjsLib.GlobalWorkerOptions.workerSrc = new URL(
@@ -109,6 +110,7 @@ const NestorReadingMascot = () => (
 export const LegalGuideView: React.FC = () => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [explanation, setExplanation] = useState<string | null>(null);
+  const [tldr, setTldr] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<string | null>(null);
 
   const extractTextFromPDF = async (file: File): Promise<string> => {
@@ -157,6 +159,7 @@ export const LegalGuideView: React.FC = () => {
   const analyzeContract = async (contractText: string) => {
     setIsAnalyzing(true);
     setExplanation(null);
+    setTldr(null);
 
     try {
       const apiBase = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_URL || 'http://localhost:8000';
@@ -180,8 +183,16 @@ export const LegalGuideView: React.FC = () => {
       // Extended delay for animation
       await new Promise(r => setTimeout(r, 2000));
 
-      // As per the pattern: { analysis: string, model: string }
-      setExplanation(data.analysis || "Nestor couldn't read that one. Try again!");
+      const analysisText = data.analysis || "Nestor couldn't read that one. Try again!";
+      setExplanation(analysisText);
+
+      // Gen Z TLDR: use backend-provided tldr or generate via chat API
+      if (data.tldr && typeof data.tldr === 'string') {
+        setTldr(data.tldr.trim());
+      } else {
+        const generated = await generateContractTLDR(analysisText);
+        if (generated) setTldr(generated);
+      }
     } catch (err) {
       console.error('Analysis error:', err);
       setExplanation(err instanceof Error ? err.message : "Nestor's legal brain is a bit fuzzy right now. Check back soon!");
@@ -247,10 +258,21 @@ export const LegalGuideView: React.FC = () => {
                   animate={{ opacity: 1, y: 0 }}
                   className="space-y-8"
                 >
+                  {tldr && (
+                    <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 p-6 rounded-[2rem] border-2 border-violet-200/60">
+                      <div className="flex items-center gap-2 text-violet-600 font-black text-xs uppercase tracking-widest mb-3">
+                        <i className="fa-solid fa-bolt"></i>
+                        TLDR — Too Long; Didn&apos;t Read
+                      </div>
+                      <p className="text-gray-800 font-semibold leading-relaxed">
+                        {tldr}
+                      </p>
+                    </div>
+                  )}
                   <div className="bg-blue-50/50 p-8 rounded-[2rem] border border-brand-blue/10">
                     <div className="flex items-center gap-3 text-brand-blue font-black text-sm uppercase tracking-widest mb-6">
                       <i className="fa-solid fa-sparkles"></i>
-                      Nestor's Summary for {selectedFile}
+                      Nestor&apos;s Summary for {selectedFile}
                     </div>
                     <div className="prose prose-blue max-w-none text-gray-700 font-medium leading-relaxed whitespace-pre-wrap">
                       {explanation}
@@ -258,7 +280,7 @@ export const LegalGuideView: React.FC = () => {
                   </div>
                   <div className="flex gap-4">
                     <button
-                      onClick={() => setExplanation(null)}
+                      onClick={() => { setExplanation(null); setTldr(null); }}
                       className="flex-1 bg-white border-2 border-gray-100 text-gray-500 py-4 rounded-xl font-black hover:bg-gray-50 transition-all"
                     >
                       Analyze Another
@@ -297,9 +319,14 @@ export const LegalGuideView: React.FC = () => {
               <p className="text-sm font-medium text-gray-500 leading-relaxed mb-6">
                 If your contract looks suspicious, we recommend contacting Citizens Advice or your University Housing Office.
               </p>
-              <button className="w-full py-4 rounded-xl border-2 border-brand-blue text-brand-blue font-black text-xs hover:bg-brand-blue hover:text-white transition-all uppercase tracking-widest">
+              <a
+                href="https://www.citizensadvice.org.uk/?gad_source=1&gad_campaignid=9442993566&gbraid=0AAAAAD8FlpyU0DE7eD-tB0qrm14Cwoj1R&gclid=Cj0KCQiA2bTNBhDjARIsAK89wlFZwlmPMaRYX0ZFsZvmgtLOCB8ipowJUqG0qWkvU-_PaEWCeudOkmsaAulDEALw_wcB"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block w-full py-4 rounded-xl border-2 border-brand-blue text-brand-blue font-black text-xs hover:bg-brand-blue hover:text-white transition-all uppercase tracking-widest text-center"
+              >
                 View Resources
-              </button>
+              </a>
             </div>
           </div>
         </div>

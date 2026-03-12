@@ -152,95 +152,56 @@ export const generateHousingMatches = async (profile: UserProfile): Promise<Matc
 };
 
 export const getLocationInsights = async (locationName: string): Promise<LocationInsight> => {
-  const ai = new GoogleGenAI({ apiKey: process.env.API_KEY });
+  const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_URL || 'http://localhost:8000';
+  const url = `${API_BASE.replace(/\/$/, '')}/api/v1/location-insight?city=${encodeURIComponent(locationName)}`;
 
-  const prompt = `
-    Act as a UK Education and Travel Guide. Provide a detailed, highly accurate breakdown for a student interested in: "${locationName}".
+  const response = await fetch(url);
+
+  if (!response.ok) {
+    const errText = await response.text();
+    console.error("Failed to get location insights:", response.status, errText);
+    throw new Error(errText || `Location insight failed: ${response.status}`);
+  }
+
+  const insight = (await response.json()) as LocationInsight;
+  return insight;
+};
+
+/** Gen Z–styled TLDR for contract analysis, via chat API. Used by Legal Guide. */
+export const generateContractTLDR = async (analysisText: string): Promise<string | null> => {
+  const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_APP_URL || 'http://localhost:8000';
+  const BACKEND_URL = `${API_BASE.replace(/\/$/, '')}/api/v1/chat`;
+
+  const systemInstruction = `
+    You are Nestor giving a "TLDR" summary. Use a Gen Z tone: casual, punchy, relatable.
+    Use phrases like: lowkey, no cap, basically, the vibes, ick, red flag, green flag, slay, mid.
+    Keep it to 2–4 short sentences max. British English.
+    Output ONLY the TLDR text, no labels or headers.
   `;
 
+  const userMessage = `Turn this contract analysis into a Gen Z TLDR (2-4 punchy sentences):\n\n${analysisText.slice(0, 8000)}`;
+
   try {
-    const response = await ai.models.generateContent({
-      model: "gemini-3-flash-preview",
-      contents: prompt,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            cityName: { type: Type.STRING },
-            tagline: { type: Type.STRING },
-            description: { type: Type.STRING },
-            stats: {
-              type: Type.OBJECT,
-              properties: {
-                universities: { type: Type.INTEGER },
-                avgRent: { type: Type.STRING },
-                studentPopulation: { type: Type.STRING },
-                studentAreasCount: { type: Type.INTEGER }
-              }
-            },
-            whyChoose: { type: Type.ARRAY, items: { type: Type.STRING } },
-            universitiesList: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  students: { type: Type.STRING },
-                  isRussellGroup: { type: Type.BOOLEAN }
-                }
-              }
-            },
-            environment: {
-              type: Type.OBJECT,
-              properties: {
-                climate: { type: Type.STRING },
-                safety: { type: Type.STRING },
-                diversity: { type: Type.STRING },
-                greenSpaces: { type: Type.STRING }
-              }
-            },
-            amenities: {
-              type: Type.OBJECT,
-              properties: {
-                transport: { type: Type.ARRAY, items: { type: Type.STRING } },
-                shopping: { type: Type.ARRAY, items: { type: Type.STRING } },
-                dining: { type: Type.ARRAY, items: { type: Type.STRING } },
-                healthcare: { type: Type.ARRAY, items: { type: Type.STRING } },
-                recreation: { type: Type.ARRAY, items: { type: Type.STRING } },
-                essentials: { type: Type.ARRAY, items: { type: Type.STRING } }
-              }
-            },
-            popularAreas: {
-              type: Type.ARRAY,
-              items: {
-                type: Type.OBJECT,
-                properties: {
-                  name: { type: Type.STRING },
-                  price: { type: Type.STRING },
-                  description: { type: Type.STRING }
-                }
-              }
-            },
-            monthlyCosts: {
-              type: Type.OBJECT,
-              properties: {
-                rent: { type: Type.STRING },
-                groceries: { type: Type.STRING },
-                utilities: { type: Type.STRING },
-                transport: { type: Type.STRING },
-                entertainment: { type: Type.STRING }
-              }
-            }
-          }
-        }
-      }
+    const response = await fetch(BACKEND_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        messages: [
+          { role: 'system', content: systemInstruction.trim() },
+          { role: 'user', content: userMessage }
+        ],
+        temperature: 0.7,
+        max_tokens: 256,
+        stream: false
+      })
     });
 
-    return JSON.parse(response.text || "{}") as LocationInsight;
-  } catch (error) {
-    console.error("Failed to get location insights:", error);
-    throw error;
+    if (!response.ok) return null;
+    const data = await response.json();
+    const tldr = (data.content || '').trim();
+    return tldr || null;
+  } catch {
+    return null;
   }
 };
 
